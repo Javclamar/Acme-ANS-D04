@@ -1,11 +1,12 @@
 
-package acme.features.agent.claim;
+package acme.features.administrator.claim;
 
 import java.util.Collection;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
 import acme.client.components.models.Dataset;
+import acme.client.components.principals.Administrator;
 import acme.client.components.views.SelectChoices;
 import acme.client.services.AbstractGuiService;
 import acme.client.services.GuiService;
@@ -13,29 +14,21 @@ import acme.entities.claims.Claim;
 import acme.entities.claims.ClaimStatus;
 import acme.entities.claims.ClaimType;
 import acme.entities.flights.Leg;
-import acme.realms.agents.Agent;
 
 @GuiService
-public class AgentClaimPublishService extends AbstractGuiService<Agent, Claim> {
+public class AdministratorClaimShowService extends AbstractGuiService<Administrator, Claim> {
+
+	// Internal state ---------------------------------------------------------
 
 	@Autowired
-	private AgentClaimRepository repository;
+	private AdministratorClaimRepository repository;
+
+	// AbstractGuiService interface -------------------------------------------
 
 
 	@Override
 	public void authorise() {
-		boolean status;
-		int masterId;
-		Claim claim;
-		Agent agent;
-
-		masterId = super.getRequest().getData("id", int.class);
-		claim = this.repository.findClaimById(masterId);
-		agent = claim == null ? null : claim.getAgent();
-
-		status = claim != null && claim.isDraftMode() && super.getRequest().getPrincipal().hasRealm(agent);
-
-		super.getResponse().setAuthorised(status);
+		super.getResponse().setAuthorised(true);
 	}
 
 	@Override
@@ -44,35 +37,9 @@ public class AgentClaimPublishService extends AbstractGuiService<Agent, Claim> {
 		int id;
 
 		id = super.getRequest().getData("id", int.class);
-		claim = this.repository.findClaimById(id);
+		claim = this.repository.findAnnouncementById(id);
 
 		super.getBuffer().addData(claim);
-	}
-
-	@Override
-	public void bind(final Claim claim) {
-		int legId;
-		Leg leg;
-
-		legId = super.getRequest().getData("leg", int.class);
-		leg = this.repository.findLegById(legId);
-
-		super.bindObject(claim, "email", "description", "type", "status");
-		claim.setLeg(leg);
-	}
-
-	@Override
-	public void validate(final Claim claim) {
-		Integer trackingLogs;
-
-		trackingLogs = this.repository.findTrackingLogsByClaimId(claim.getId()).size();
-		super.state(trackingLogs != null && trackingLogs > 0, "*", "agent.claim.form.error.not-tracking-logs-found");
-	}
-
-	@Override
-	public void perform(final Claim claim) {
-		claim.setDraftMode(false);
-		this.repository.save(claim);
 	}
 
 	@Override
@@ -93,10 +60,9 @@ public class AgentClaimPublishService extends AbstractGuiService<Agent, Claim> {
 		dataset = super.unbindObject(claim, "moment", "email", "description", "type", "draftMode");
 		dataset.put("status", choicesStatus.getSelected().getKey());
 		dataset.put("types", choicesType);
-		dataset.put("leg", choicesLegs.getSelected().getKey());
 		dataset.put("legs", choicesLegs);
+		dataset.put("readonly", true);
 
 		super.getResponse().addData(dataset);
 	}
-
 }
