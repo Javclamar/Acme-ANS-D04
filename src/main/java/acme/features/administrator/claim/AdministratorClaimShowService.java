@@ -59,7 +59,7 @@ public class AdministratorClaimShowService extends AbstractGuiService<Administra
 
 		dataset = super.unbindObject(claim, "moment", "email", "description", "type", "draftMode");
 		dataset.put("status", choicesStatus.getSelected().getKey());
-		dataset.put("type", choicesType);
+		dataset.put("types", choicesType);
 		dataset.put("legs", choicesLegs);
 		dataset.put("readonly", true);
 
