@@ -1,25 +1,22 @@
 
-package acme.features.agent.claim;
+package acme.features.administrator.claim;
 
 import java.util.Collection;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
 import acme.client.components.models.Dataset;
+import acme.client.components.principals.Administrator;
 import acme.client.services.AbstractGuiService;
 import acme.client.services.GuiService;
 import acme.entities.claims.Claim;
-import acme.entities.claims.ClaimStatus;
-import acme.realms.agents.Agent;
 
 @GuiService
-public class AgentClaimListCompletedService extends AbstractGuiService<Agent, Claim> {
-
+public class AdministratorClaimListService extends AbstractGuiService<Administrator, Claim> {
 	// Internal state ---------------------------------------------------------
 
 	@Autowired
-	private AgentClaimRepository repository;
+	private AdministratorClaimRepository repository;
 
 	// AbstractGuiService interface -------------------------------------------
 
@@ -32,11 +29,9 @@ public class AgentClaimListCompletedService extends AbstractGuiService<Agent, Cl
 	@Override
 	public void load() {
 		Collection<Claim> claims;
-		int agentId;
 
-		agentId = super.getRequest().getPrincipal().getActiveRealm().getId();
+		claims = this.repository.findAllPublishedClaims();
 
-		claims = this.repository.findAllClaimsByAgentId(agentId).stream().filter(c -> c.getStatus() == ClaimStatus.ACCEPTED || c.getStatus() == ClaimStatus.REJECTED).collect(Collectors.toList());
 		super.getBuffer().addData(claims);
 	}
 
@@ -45,9 +40,6 @@ public class AgentClaimListCompletedService extends AbstractGuiService<Agent, Cl
 		Dataset dataset;
 
 		dataset = super.unbindObject(claim, "type", "moment", "email");
-		super.addPayload(dataset, claim, //
-			"description", "agent.employeeCode", //
-			"agent.identity.fullName", "agent.airline", "leg.id");
 
 		super.getResponse().addData(dataset);
 	}

@@ -50,15 +50,14 @@ public class TrackingLogValidator extends AbstractValidator<ValidTrackingLog, Tr
 			onlyPending = trackingLog.getStatus().equals(ClaimStatus.PENDING);
 			super.state(context, onlyPending, "status", "acme.validation.trackingLog.resolution-Taken.message");
 
-			/*
-			 * boolean ascending;
-			 * TrackingLog actualMax = this.repository.findTrackingLogsOrderedByPercentage(trackingLog.getClaim().getId()).get(0);
-			 * if (trackingLog.getPercentage() == 100.00)
-			 * ascending = trackingLog.getPercentage() == actualMax.getPercentage();
-			 * else
-			 * ascending = trackingLog.getPercentage() > actualMax.getPercentage();
-			 * super.state(context, ascending, "percentage", "acme.validation.trackingLog.ascending-percentage.message");
-			 */
+			boolean ascending;
+			TrackingLog actualMax = this.repository.findTrackingLogsOrderedByPercentage(trackingLog.getClaim().getId()).get(0);
+			if (trackingLog.getPercentage() == 100.00)
+				ascending = trackingLog.getPercentage() == actualMax.getPercentage();
+			else
+				ascending = trackingLog.getPercentage() > actualMax.getPercentage();
+			super.state(context, ascending, "percentage", "acme.validation.trackingLog.ascending-percentage.message");
+
 		}
 		result = !super.hasErrors(context);
 		return result;
